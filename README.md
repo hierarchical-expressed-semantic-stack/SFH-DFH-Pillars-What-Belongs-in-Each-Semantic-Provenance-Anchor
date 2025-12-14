@@ -3,7 +3,7 @@
 
 # 🌐 The Semantic Web Stack
 ## SFH / DFH — The 10-Anchor Deterministic First-Hop (Meaning + Provenance)
-### (GitHub Repository Template · “What goes inside each anchor” · Draft)
+### (GitHub Repository Template · “What goes inside each anchor” · 
 
 **One root file. Ten anchors. Deterministic meaning + deterministic provenance.**  
 This repo is a **builder + reference** for what goes **inside every SFH/DFH anchor**, how the anchors **link together**, and how AI/search systems can resolve ambiguity **without guessing the first hop**.
