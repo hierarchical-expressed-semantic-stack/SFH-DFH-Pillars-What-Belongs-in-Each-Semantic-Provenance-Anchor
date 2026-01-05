@@ -1,13 +1,253 @@
-# 🌐 SFH / DFH — “What Goes in Each Anchor” (Human Version)
+# 🌐 HESS / DFH — “What Goes in Each Anchor” (Human Version)
 ### One root file. Ten anchors. A simple first place for AI + search to start.
 
-SFH (Semantic First-Hop) / DFH (Deterministic First-Hop) is **not a truth engine**.
+Hess (Semantic First-Hop) / DFH (Deterministic First-Hop) is **not a truth engine**.
 It’s a **deterministic “start here” layer** so machines don’t guess where meaning and provenance begin.
+
+🧱 HESS / DFH — The 5 Mandatory Meaning Anchors (Implementer Guide)
+
+Goal: publish one deterministic “first hop” for meaning at:
+
+https://yourdomain.com/.well-known/stack
+
+That single file points to 5 meaning anchors machines can fetch immediately.
+
+DNS tells machines where to go.
+HESS / DFH tells machines what it means when they get there.
+
+✅ The 5 Mandatory Meaning Anchors (What each anchor answers)
+Anchor	Answers	What goes inside (in plain English)
+/type	“What class of thing is this topic?”	Taxonomy / ontology classification (JSON-LD)
+/entity	“What is the noun / entity?”	The primary entity record(s) with stable IDs
+/url	“Where does this meaning live?”	Canonical URL bindings for the entity / key routes
+/canonical	“What do we call it — and what is it NOT?”	Canonical label + aliases + ambiguity boundaries
+/sitemap	“What is the crawl surface (start here)?”	A declared list of crawl entrypoints / conceptual surfaces (NOT a URL dump)
+
+Rule: These anchors declare meaning + intent, not “truth.”
+Downstream systems can accept, reject, weight, or override.
+
+📁 Minimal Directory Layout
+yourdomain.com/
+├─ .well-known/
+│  └─ stack                      <-- root descriptor (JSON-LD)
+├─ type/
+│  └─ index.jsonld
+├─ entity/
+│  └─ index.jsonld
+├─ url/
+│  └─ index.jsonld
+├─ canonical/
+│  └─ index.jsonld
+├─ sitemap/
+│  └─ index.jsonld               <-- DFH sitemap anchor (JSON-LD)
+└─ sitemap.xml                   <-- traditional XML sitemap (optional but common)
+
+1) /.well-known/stack — Root Descriptor (Bootstrap)
+
+This is the only mandatory discovery file.
+It should stay tiny and stable.
+
+{
+  "@context": { "dfh": "https://example.org/ns/dfh#" },
+  "@id": "https://yourdomain.com/.well-known/stack",
+  "@type": "dfh:DeterministicSemanticRoot",
+  "dfh:anchors": {
+    "dfh:type": "https://yourdomain.com/type/index.jsonld",
+    "dfh:entity": "https://yourdomain.com/entity/index.jsonld",
+    "dfh:url": "https://yourdomain.com/url/index.jsonld",
+    "dfh:canonical": "https://yourdomain.com/canonical/index.jsonld",
+    "dfh:sitemap": "https://yourdomain.com/sitemap/index.jsonld"
+  }
+}
+
+2) /type — What class of thing is this?
+
+Purpose: declare the topic’s classification using stable vocabularies.
+
+{
+  "@context": {
+    "schema": "https://schema.org/",
+    "dfh": "https://example.org/ns/dfh#"
+  },
+  "@id": "https://yourdomain.com/type/index.jsonld",
+  "@type": "dfh:TypeAnchor",
+  "dfh:domainRepresents": [
+    { "@id": "schema:Thing" },
+    { "@id": "schema:CreativeWork" }
+  ],
+  "dfh:primaryTopic": "beer"
+}
+
+3) /entity — What is the noun / entity?
+
+Purpose: define the primary entity with a stable ID.
+
+{
+  "@context": {
+    "schema": "https://schema.org/",
+    "dfh": "https://example.org/ns/dfh#"
+  },
+  "@id": "https://yourdomain.com/entity/index.jsonld",
+  "@type": "dfh:EntityAnchor",
+  "dfh:items": [
+    {
+      "@id": "urn:dfh:entity:beer",
+      "@type": "schema:Product",
+      "schema:name": "Beer",
+      "schema:description": "A fermented malt beverage produced from cereal grains, water, hops, and yeast, typically containing alcohol by volume as defined by applicable law."
+    }
+  ]
+}
+
+4) /url — Where meaning lives (domain-owned)
+
+Purpose: bind the entity to the canonical URLs you control.
+
+{
+  "@context": { "dfh": "https://example.org/ns/dfh#" },
+  "@id": "https://yourdomain.com/url/index.jsonld",
+  "@type": "dfh:UrlAnchor",
+  "dfh:items": [
+    { "entity": "urn:dfh:entity:beer", "url": "https://yourdomain.com/", "rel": "canonical" },
+    { "entity": "urn:dfh:entity:beer", "url": "https://yourdomain.com/definition", "rel": "definition" },
+    { "entity": "urn:dfh:entity:beer", "url": "https://yourdomain.com/types", "rel": "taxonomy" }
+  ]
+}
+
+
+Key point: DFH only works if the first hop lands on a domain you control, because authority cannot be rooted in a domain you don’t own.
+
+5) /canonical — What to call it, and what it is NOT (ambiguity boundary)
+
+Purpose: prevent “Beer” from being mixed with other meanings or contexts.
+
+{
+  "@context": { "dfh": "https://example.org/ns/dfh#" },
+  "@id": "https://yourdomain.com/canonical/index.jsonld",
+  "@type": "dfh:CanonicalAnchor",
+  "dfh:items": [
+    {
+      "entity": "urn:dfh:entity:beer",
+      "canonicalLabel": "Beer",
+      "aliases": ["Malt beverage", "Brewed beer"],
+      "notThis": [
+        "brewery (a business/organization)",
+        "medical advice about alcohol",
+        "legal guidance",
+        "rankings/opinions/reviews"
+      ]
+    }
+  ]
+}
+
+6) /sitemap — The part everyone confuses (so here’s the final rule)
+✅ What /sitemap IS
+
+/sitemap is the DFH “crawl declaration.”
+It says:
+
+“Start here. These are the official crawl entrypoints / conceptual surfaces for this topic.”
+
+It is a semantic directory, not a URL list.
+
+❌ What /sitemap is NOT
+
+NOT your XML sitemap contents
+
+NOT a page list
+
+NOT navigation
+
+NOT “SEO links”
+
+NOT “every URL on the site”
+
+✅ What you put in /sitemap
+
+You put entrypoints — usually:
+
+your sitemap.xml (traditional crawler entrypoint)
+
+optionally other declared surfaces (like a taxonomy feed, entity feed, docs index, etc.)
+
+Example /sitemap anchor (correct)
+{
+  "@context": { "dfh": "https://example.org/ns/dfh#" },
+  "@id": "https://yourdomain.com/sitemap/index.jsonld",
+  "@type": "dfh:SitemapAnchor",
+  "dfh:entrypoints": [
+    {
+      "id": "xml-sitemap",
+      "url": "https://yourdomain.com/sitemap.xml",
+      "kind": "sitemap"
+    },
+    {
+      "id": "types-surface",
+      "url": "https://yourdomain.com/types",
+      "kind": "concept-surface"
+    },
+    {
+      "id": "definition-surface",
+      "url": "https://yourdomain.com/definition",
+      "kind": "concept-surface"
+    }
+  ]
+}
+
+What goes in sitemap.xml then?
+
+That’s the normal XML sitemap: a list of URLs you want indexed.
+
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://yourdomain.com/</loc></url>
+  <url><loc>https://yourdomain.com/definition</loc></url>
+  <url><loc>https://yourdomain.com/types</loc></url>
+</urlset>
+
+🔗 Deterministic Fetch Flow (no confusion)
+
+Fetch: https://yourdomain.com/.well-known/stack
+
+Get the 5 anchor URLs
+
+Fetch anchors:
+
+/type → classification
+
+/entity → entity identity
+
+/url → canonical bindings
+
+/canonical → naming + NOT-this boundaries
+
+/sitemap → declared crawl entrypoints
+
+Optional: then crawl the entrypoints (like sitemap.xml) normally
+
+🍺 Beer Example (your “5 domains” phrasing, but clean)
+
+If you want a simple mental model for humans:
+
+Type = what class of thing
+
+Entity = what noun it is
+
+URL = where the authoritative meaning lives (your owned domain)
+
+Canonical = what it’s called + what it is NOT
+
+Sitemap = where to crawl first (declared entrypoints / concept surfaces)
+
+The killer line that removes confusion:
+
+/sitemap is a directory of “start here” entrypoints — not the sitemap itself.
+It points to crawl surfaces; it does not enumerate them.
 
 Think of it like this:
 
 - **Your main website** = where humans browse.
-- **Your SFH/DFH stack** = a tiny “directory + rules card” for machines.
+- **Your HESS/DFH stack** = a tiny “directory + rules card” for machines.
 - **Goal** = give AI a *consistent first hop* that points to the *right* pages, the *canonical identifiers*, and the *official sources*.
 
 ---
@@ -35,17 +275,17 @@ It **points back** to your site by linking to:
 - sitemaps (your official content map)
 - sources (docs, repositories, policy pages, legal pages, etc.)
 
-So: **SFH/DFH is a map + grounding contract that points back to the real site.**
+So: **HESS/DFH is a map + grounding contract that points back to the real site.**
 
 ---
 
-## 🧱 The 10 Anchors (Human-friendly)
+## 🧱 The 5 AND 10 Anchors (Human-friendly)
 You can think of the anchors as two groups:
 
-### Meaning Anchors (5) — “What things are”
+### Meaning Anchors (5) — “What things are” this covers 90 percent of topics
 These tell machines what you mean when you say words like “product”, “support”, “pricing”, “Jaguar”, etc.
 
-### Provenance Anchors (5) — “Why this should be trusted”
+### Provenance Anchors (5) — “Why this should be trusted” this is for big companies or major topics that need provenance
 These tell machines how to judge *origin, currency, permission, and tamper resistance*.
 
 ---
