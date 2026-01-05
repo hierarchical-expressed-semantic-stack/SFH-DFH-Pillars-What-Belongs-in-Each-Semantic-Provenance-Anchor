@@ -6,24 +6,47 @@ It’s a **deterministic “start here” layer** so machines don’t guess wher
 
 🧱 HESS / DFH — The 5 Mandatory Meaning Anchors (Implementer Guide)
 
+
+
 Goal: publish one deterministic “first hop” for meaning at:
+
+
 
 https://yourdomain.com/.well-known/stack
 
+
+
 That single file points to 5 meaning anchors machines can fetch immediately.
 
+
+
 DNS tells machines where to go.
+
+
 HESS / DFH tells machines what it means when they get there.
 
 ✅ The 5 Mandatory Meaning Anchors (What each anchor answers)
 Anchor	Answers	What goes inside (in plain English)
+
+
 /type	“What class of thing is this topic?”	Taxonomy / ontology classification (JSON-LD)
+
+
 /entity	“What is the noun / entity?”	The primary entity record(s) with stable IDs
+
+
 /url	“Where does this meaning live?”	Canonical URL bindings for the entity / key routes
+
+
 /canonical	“What do we call it — and what is it NOT?”	Canonical label + aliases + ambiguity boundaries
+
+
 /sitemap	“What is the crawl surface (start here)?”	A declared list of crawl entrypoints / conceptual surfaces (NOT a URL dump)
 
+
 Rule: These anchors declare meaning + intent, not “truth.”
+
+
 Downstream systems can accept, reject, weight, or override.
 
 📁 Minimal Directory Layout
